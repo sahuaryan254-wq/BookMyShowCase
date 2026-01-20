@@ -1,1 +1,3 @@
-import React from 'react'; export default function SeatSelection() { return <div>SeatSelection Page</div>; }
+export default function SeatSelection() {
+    return <div>SeatSelection Page</div>;
+}

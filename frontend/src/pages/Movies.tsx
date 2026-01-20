@@ -1,1 +1,3 @@
-import React from 'react'; export default function Movies() { return <div>Movies Page</div>; }
+export default function Movies() {
+    return <div>Movies Page</div>;
+}

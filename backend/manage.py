@@ -2,12 +2,18 @@
 "Django's command-line utility for administrative tasks."
 import os
 import sys
-import pymysql
+try:
+    # Optional: only required when running with MySQL (USE_MYSQL=1).
+    import pymysql  # type: ignore
 
-pymysql.install_as_MySQLdb()
-import MySQLdb
-MySQLdb.version_info = (2, 2, 2, 'final', 0)
-MySQLdb.version = '2.2.2'
+    pymysql.install_as_MySQLdb()
+    import MySQLdb  # type: ignore
+
+    MySQLdb.version_info = (2, 2, 2, 'final', 0)
+    MySQLdb.version = '2.2.2'
+except Exception:
+    # SQLite-by-default setup should work without PyMySQL installed.
+    pass
 
 def main():
     "Run administrative tasks."

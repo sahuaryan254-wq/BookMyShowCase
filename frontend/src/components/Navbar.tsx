@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Search, ChevronDown, Menu, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
+    const { user, isAuthenticated, logout } = useAuth();
+
     return (
         <header>
             {/* Top Navbar */}
@@ -56,9 +59,30 @@ export default function Navbar() {
                             <ChevronDown size={14} />
                         </div>
 
-                        <Link to="/login" className="btn btn-primary" style={{ padding: '0.2rem 1.2rem', fontSize: '0.8rem' }}>
-                            Sign In
-                        </Link>
+                        {isAuthenticated && user ? (
+                            <>
+                                {(user.is_staff || user.is_theatre_owner) && (
+                                    <Link to="/dashboard" className="hover:text-white" style={{ padding: '0.2rem 0.8rem', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                        Dashboard
+                                    </Link>
+                                )}
+                                <Link to="/profile" className="flex items-center gap-2 hover:text-white" style={{ padding: '0.2rem 0.8rem', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                    <User size={18} />
+                                    <span>ID: {user.id}</span>
+                                </Link>
+                                <button
+                                    onClick={logout}
+                                    className="btn"
+                                    style={{ padding: '0.2rem 1rem', fontSize: '0.8rem', border: '1px solid rgba(255,255,255,0.3)' }}
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <Link to="/login" className="btn btn-primary" style={{ padding: '0.2rem 1.2rem', fontSize: '0.8rem' }}>
+                                Sign In
+                            </Link>
+                        )}
 
                         <div className="flex items-center gap-2 cursor-pointer">
                             <Menu size={24} />

@@ -4,6 +4,8 @@ from rest_framework.permissions import AllowAny
 from .models import CustomUser, OTP
 from .serializers import UserSerializer, RegisterSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 import random
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -98,3 +100,19 @@ class ResetPasswordView(views.APIView):
             return Response({'message': 'Password reset successful'})
         except CustomUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Extend default JWT login response to include basic user payload
+    (frontend expects: access, refresh, user).
+    """
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data["user"] = UserSerializer(self.user).data
+        return data
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
+import { login, googleLogin } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const { setUser } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await login({ username: email, password });
+            const data = await login({ username: email, password });
+            if (data.user) {
+                setUser(data.user);
+            }
             navigate('/');
         } catch (error) {
             alert('Login failed. Please check credentials.');
@@ -19,33 +24,12 @@ export default function Login() {
     };
 
     const handleGoogleLogin = async () => {
-        // Simulating Google Login by sending a mock email to backend
         try {
-            await login({
-                username: 'demo_google_user@gmail.com',
-                password: '', // Password not needed for this mock flow, but API might expect it. 
-                // Wait, use specific google login endpoint in api.ts? 
-                // Actually, let's just use the `login` function but we need to update api.ts to support google login route OR just call axios here.
-                // Let's call axios directly for simplicity or update existing login.
-                // Better: Let's assume we update api.ts to have `googleLogin`.
-            });
-            // Since api.login expects (username, password), we can't use it directly for this custom flow easily without modifying it.
-            // Let's just do a direct fetch here to be safe and fast.
-            const response = await fetch('http://localhost:8000/api/users/login/google/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'demo_google_user@gmail.com', name: 'Demo Google User' })
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('access', data.access);
-                localStorage.setItem('refresh', data.refresh);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                navigate('/');
-            } else {
-                alert('Google Login Failed');
+            const data = await googleLogin('demo_google_user@gmail.com', 'Demo Google User');
+            if (data.user) {
+                setUser(data.user);
             }
+            navigate('/');
         } catch (err) {
             console.error(err);
             alert('Google Login Failed');

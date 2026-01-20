@@ -24,6 +24,16 @@ export const login = async (data: any) => {
     return response.data;
 };
 
+export const googleLogin = async (email: string, name: string) => {
+    const response = await api.post('users/login/google/', { email, name });
+    if (response.data.access) {
+        localStorage.setItem('access', response.data.access);
+        localStorage.setItem('refresh', response.data.refresh);
+        localStorage.setItem('user', JSON.stringify(response.data.user || {}));
+    }
+    return response.data;
+};
+
 export const register = async (data: any) => {
     const response = await api.post('users/register/', data);
     if (response.data.access) {

@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const { setUser } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await register({ username: name, email, password });
+            const data = await register({ username: name, email, password });
+            if (data.user) {
+                setUser(data.user);
+            }
             navigate('/');
         } catch (error: any) {
             console.error(error);
