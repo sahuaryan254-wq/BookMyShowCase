@@ -13,8 +13,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the app
-RUN npm run build
+# Build argument for API URL (defaults to localhost)
+ARG VITE_API_URL=http://localhost:8000/api/
+
+# Build the app with API URL
+RUN VITE_API_URL=${VITE_API_URL} npm run build
 
 # Production stage
 FROM nginx:alpine

@@ -1,12 +1,18 @@
 pipeline {
+    // Use any available agent (Docker, EC2, VM, etc.)
+    // For Docker builds, ensure agent has Docker installed and socket access
     agent any
 
     environment {
-        DOCKER_REGISTRY = credentials('docker-registry-url')
+        // Docker registry credentials (optional - uncomment if using registry)
+        // DOCKER_REGISTRY = credentials('docker-registry-url')
         DOCKER_IMAGE_BACKEND = 'bookmyshowcase-backend'
         DOCKER_IMAGE_FRONTEND = 'bookmyshowcase-frontend'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         NETWORK_NAME = 'bookmyshowcase_network'
+        DB_CONTAINER = 'bookmyshowcase_db'
+        BACKEND_CONTAINER = 'bookmyshowcase_backend'
+        FRONTEND_CONTAINER = 'bookmyshowcase_frontend'
     }
 
     stages {
@@ -76,55 +82,67 @@ pipeline {
             steps {
                 script {
                     echo 'Testing with Docker Network...'
-                    sh '''
+                    sh """
                         # Cleanup existing containers
-                        docker stop bookmyshowcase_db bookmyshowcase_backend bookmyshowcase_frontend 2>/dev/null || true
-                        docker rm bookmyshowcase_db bookmyshowcase_backend bookmyshowcase_frontend 2>/dev/null || true
-                        docker network rm bookmyshowcase_network 2>/dev/null || true
+                        docker stop ${DB_CONTAINER} ${BACKEND_CONTAINER} ${FRONTEND_CONTAINER} 2>/dev/null || true
+                        docker rm ${DB_CONTAINER} ${BACKEND_CONTAINER} ${FRONTEND_CONTAINER} 2>/dev/null || true
+                        docker network rm ${NETWORK_NAME} 2>/dev/null || true
                         
                         # Create network
-                        docker network create bookmyshowcase_network
+                        docker network create ${NETWORK_NAME}
                         
                         # Start MySQL
-                        docker run -d --name bookmyshowcase_db --network bookmyshowcase_network \
-                            -e MYSQL_DATABASE=bookmyshowcase \
-                            -e MYSQL_USER=bookmyshowcase_user \
-                            -e MYSQL_PASSWORD=bookmyshowcase_pass \
-                            -e MYSQL_ROOT_PASSWORD=root_password \
+                        docker run -d --name ${DB_CONTAINER} --network ${NETWORK_NAME} \\
+                            -e MYSQL_DATABASE=bookmyshowcase \\
+                            -e MYSQL_USER=bookmyshowcase_user \\
+                            -e MYSQL_PASSWORD=bookmyshowcase_pass \\
+                            -e MYSQL_ROOT_PASSWORD=root_password \\
                             mysql:8.0
                         
+                        echo 'Waiting for MySQL to be ready...'
                         sleep 15
                         
                         # Start Backend
-                        docker run -d --name bookmyshowcase_backend --network bookmyshowcase_network \
-                            -p 8000:8000 \
-                            -e DEBUG=1 -e USE_MYSQL=1 \
-                            -e MYSQL_DATABASE=bookmyshowcase \
-                            -e MYSQL_USER=bookmyshowcase_user \
-                            -e MYSQL_PASSWORD=bookmyshowcase_pass \
-                            -e MYSQL_HOST=bookmyshowcase_db \
+                        docker run -d --name ${BACKEND_CONTAINER} --network ${NETWORK_NAME} \\
+                            -p 8000:8000 \\
+                            -e DEBUG=1 \\
+                            -e USE_MYSQL=1 \\
+                            -e MYSQL_DATABASE=bookmyshowcase \\
+                            -e MYSQL_USER=bookmyshowcase_user \\
+                            -e MYSQL_PASSWORD=bookmyshowcase_pass \\
+                            -e MYSQL_HOST=${DB_CONTAINER} \\
+                            -e MYSQL_PORT=3306 \\
+                            -e SECRET_KEY=django-insecure-test-key \\
+                            -e ALLOWED_HOSTS=localhost,127.0.0.1,backend \\
                             ${DOCKER_IMAGE_BACKEND}:latest
                         
                         # Start Frontend
-                        docker run -d --name bookmyshowcase_frontend --network bookmyshowcase_network \
-                            -p 80:80 \
+                        docker run -d --name ${FRONTEND_CONTAINER} --network ${NETWORK_NAME} \\
+                            -p 80:80 \\
                             ${DOCKER_IMAGE_FRONTEND}:latest
                         
+                        echo 'Waiting for services to start...'
                         sleep 20
                         
                         # Health checks
+                        echo 'Testing backend health...'
                         curl -f http://localhost:8000/api/ || exit 1
+                        
+                        echo 'Testing frontend health...'
                         curl -f http://localhost:80/health || exit 1
-                    '''
+                        
+                        echo '✅ All health checks passed!'
+                    """
                 }
             }
             post {
                 always {
-                    sh '''
-                        docker stop bookmyshowcase_db bookmyshowcase_backend bookmyshowcase_frontend || true
-                        docker rm bookmyshowcase_db bookmyshowcase_backend bookmyshowcase_frontend || true
-                        docker network rm bookmyshowcase_network || true
-                    '''
+                    sh """
+                        echo 'Cleaning up test containers...'
+                        docker stop ${DB_CONTAINER} ${BACKEND_CONTAINER} ${FRONTEND_CONTAINER} || true
+                        docker rm ${DB_CONTAINER} ${BACKEND_CONTAINER} ${FRONTEND_CONTAINER} || true
+                        docker network rm ${NETWORK_NAME} || true
+                    """
                 }
             }
         }
