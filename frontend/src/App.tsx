@@ -34,6 +34,7 @@ function App() {
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<Dashboard />} />
       </Routes>
       <Footer />
     </Router>

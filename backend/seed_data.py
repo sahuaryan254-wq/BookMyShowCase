@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bookmyshowcase.settings')
 
-import pymysql
-pymysql.install_as_MySQLdb()
-import MySQLdb
-MySQLdb.version_info = (2, 2, 2, 'final', 0)
-MySQLdb.version = '2.2.2'
+# import pymysql
+# pymysql.install_as_MySQLdb()
+# import MySQLdb
+# MySQLdb.version_info = (2, 2, 2, 'final', 0)
+# MySQLdb.version = '2.2.2'
 
 django.setup()
 
