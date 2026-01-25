@@ -62,7 +62,7 @@ export default function Navbar() {
                         {isAuthenticated && user ? (
                             <>
                                 {(user.is_staff || user.is_theatre_owner) && (
-                                    <Link to="/dashboard" className="hover:text-white" style={{ padding: '0.2rem 0.8rem', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                    <Link to="/admin" className="hover:text-white" style={{ padding: '0.2rem 0.8rem', fontSize: '0.9rem', textDecoration: 'none' }}>
                                         Dashboard
                                     </Link>
                                 )}
