@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -16,10 +16,13 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import './styles/main.css';
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/manage');
+
   return (
-    <Router>
-      <Navbar />
+    <>
+      {!isDashboard && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/movies" element={<Movies />} />
@@ -36,7 +39,15 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Dashboard />} />
       </Routes>
-      <Footer />
+      {!isDashboard && <Footer />}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }
