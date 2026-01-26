@@ -3,16 +3,16 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import {
-    LayoutDashboard, Box, Layout, Users, ShoppingCart,
-    Mail, MessageSquare, Calendar, ShieldCheck,
+    LayoutDashboard, Box, Users, ShoppingCart,
+    Mail, MessageSquare, Calendar, Monitor,
     ChevronRight, ChevronDown, Search, Globe,
     Moon, Bell, User, Edit2, Trash2, Eye,
     DollarSign, ClipboardList, TrendingUp, Download,
-    Facebook, Twitter, Youtube, ExternalLink, Menu, X
+    Menu, X
 } from 'lucide-react';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
-    PieChart, Pie, Cell, BarChart, Bar
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
+    PieChart, Pie, Cell
 } from 'recharts';
 
 const COLORS = {
@@ -60,6 +60,8 @@ export default function Dashboard() {
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [stats, setStats] = useState<any>(null);
     const [extraData, setExtraData] = useState<any>(null);
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const [dateFilter, setDateFilter] = useState('This Month');
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -98,21 +100,18 @@ export default function Dashboard() {
 
     const sidebarItems = [
         { type: 'label', label: 'MATERIALLY', subLabel: 'Dashboard & Widget' },
-        { name: 'Dashboard', icon: LayoutDashboard, path: '/admin', active: true },
+        { name: 'Dashboard', icon: LayoutDashboard, path: '/admin', active: location.pathname === '/admin' },
         { name: 'Widget', icon: Box, path: '/widgets' },
-        { name: 'RTL Layout', icon: Layout, path: '/rtl' },
         { type: 'label', label: 'APPLICATION', subLabel: 'Prebuild Application' },
         { name: 'User', icon: Users, path: '/manage/users', hasSub: true },
-        { name: 'E-commerce', icon: ShoppingCart, path: '/manage/bookings', hasSub: true },
-        { name: 'Contacts', icon: ShieldCheck, path: '/contacts', hasSub: true },
+        { name: 'Movies', icon: Box, path: '/manage/movies', hasSub: true },
+        { name: 'Theatres', icon: Monitor, path: '/manage/theatres', hasSub: true },
+        { name: 'Shows', icon: Calendar, path: '/manage/shows', hasSub: true },
+        { name: 'Bookings', icon: ShoppingCart, path: '/manage/bookings', hasSub: true },
         { name: 'Mail', icon: Mail, path: '/mail' },
         { name: 'Chat', icon: MessageSquare, path: '/chat' },
-        { name: 'Full Calendar', icon: Calendar, path: '/calendar' },
-        { type: 'label', label: 'UI ELEMENT', subLabel: 'Material UI Components' },
-        { name: 'Basic', icon: Box, path: '/basic', hasSub: true },
-        { name: 'Advance', icon: ShieldCheck, path: '/advance', hasSub: true },
-        { type: 'label', label: 'FORMS & TABLES' },
-        { name: 'Forms', icon: Edit2, path: '/forms', hasSub: true },
+        { type: 'label', label: 'SYSTEM', subLabel: 'Settings & Security' },
+        { name: 'Settings', icon: Edit2, path: '/settings' },
     ];
 
     if (loading) {
@@ -237,12 +236,45 @@ export default function Dashboard() {
                             <ChevronDown size={14} />
                         </div>
                         <Moon size={18} style={{ cursor: 'pointer' }} />
-                        <div style={{ position: 'relative', cursor: 'pointer' }}>
+                        <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setNotificationsOpen(!notificationsOpen)}>
                             <Bell size={20} />
-                            <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: COLORS.danger, width: '15px', height: '15px', borderRadius: '50%', border: '2px solid #4680ff', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>3</span>
+                            <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: COLORS.danger, width: '15px', height: '15px', borderRadius: '50%', border: '2px solid #4680ff', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {stats?.notifications?.length || 0}
+                            </span>
+
+                            {notificationsOpen && (
+                                <div style={{
+                                    position: 'absolute', top: '40px', right: '0', width: '300px', background: 'white', borderRadius: '8px', boxShadow: '0 5px 25px rgba(0,0,0,0.1)', color: '#333', zIndex: 1001, overflow: 'hidden'
+                                }}>
+                                    <div style={{ padding: '15px', fontWeight: 700, borderBottom: '1px solid #f1f1f1', display: 'flex', justifyContent: 'space-between' }}>
+                                        Notifications
+                                        <X size={16} onClick={(e) => { e.stopPropagation(); setNotificationsOpen(false); }} />
+                                    </div>
+                                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                        {stats?.notifications?.map((n: any) => (
+                                            <div key={n.id} style={{ padding: '12px 15px', borderBottom: '1px solid #f8f9fa', cursor: 'pointer', transition: 'background 0.2s' }} className="notif-item">
+                                                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{n.title}</div>
+                                                <div style={{ fontSize: '0.75rem', color: '#666' }}>{n.message}</div>
+                                                <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '4px' }}>{n.time}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ padding: '10px', textAlign: 'center', fontSize: '0.8rem', color: COLORS.primary, fontWeight: 600, background: '#f8f9fa' }}>
+                                        View All
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                            <div style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ textAlign: 'right', display: window.innerWidth > 768 ? 'block' : 'none' }}>
+                                <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.username}</div>
+                                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>Admin</div>
+                            </div>
+                            <div
+                                onClick={logout}
+                                style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                title="Click to Logout"
+                            >
                                 <User size={18} />
                             </div>
                         </div>
@@ -251,6 +283,36 @@ export default function Dashboard() {
 
                 {/* Dashboard Body */}
                 <main style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+
+                    {/* Toolbar / Filters */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '15px 20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>Filter by:</span>
+                            <div style={{ position: 'relative' }}>
+                                <select
+                                    value={dateFilter}
+                                    onChange={(e) => setDateFilter(e.target.value)}
+                                    style={{ padding: '6px 30px 6px 15px', borderRadius: '4px', border: '1px solid #e1e1e1', appearance: 'none', fontSize: '0.85rem', outline: 'none', background: 'white', cursor: 'pointer' }}
+                                >
+                                    <option>Today</option>
+                                    <option>This Week</option>
+                                    <option>This Month</option>
+                                    <option>This Year</option>
+                                </select>
+                                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#999' }} />
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', background: '#f8f9fa', border: '1px solid #e1e1e1', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                                <Download size={16} /> Export CSV
+                            </button>
+                            {stats?.user_role?.is_admin && (
+                                <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', background: COLORS.primary, color: 'white', border: 'none', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                                    <Box size={16} /> Add New Theatre
+                                </button>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Stats Grid */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
@@ -293,12 +355,12 @@ export default function Dashboard() {
                         {/* Sales Per Day Chart */}
                         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Sales Per Day</h3>
-                                <div style={{ color: '#4680ff', fontSize: '0.8rem', fontWeight: 700 }}>3% <TrendingUp size={12} style={{ verticalAlign: 'middle' }} /></div>
+                                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Sales History (Last 7 Days)</h3>
+                                <div style={{ color: '#4680ff', fontSize: '0.8rem', fontWeight: 700 }}>+12% <TrendingUp size={12} style={{ verticalAlign: 'middle' }} /></div>
                             </div>
                             <div style={{ height: '300px', width: '100%' }}>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={lineData}>
+                                    <AreaChart data={stats?.charts?.sales_history || lineData}>
                                         <defs>
                                             <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#4680ff" stopOpacity={0.1} />
@@ -332,18 +394,18 @@ export default function Dashboard() {
 
                         {/* Revenue Pie Chart */}
                         <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '20px' }}>Total Revenue</h3>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '20px' }}>Booking Distribution</h3>
                             <div style={{ height: '300px', position: 'relative' }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
-                                            data={pieData}
+                                            data={stats?.charts?.distribution || pieData}
                                             innerRadius={70}
                                             outerRadius={90}
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
-                                            {pieData.map((entry, index) => (
+                                            {(stats?.charts?.distribution || pieData).map((entry: any, index: number) => (
                                                 <Cell key={`cell-${index}`} fill={entry.color} />
                                             ))}
                                         </Pie>
@@ -352,17 +414,17 @@ export default function Dashboard() {
                                 </ResponsiveContainer>
                                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                                     <div style={{ fontSize: '0.8rem', color: '#adb5bd' }}>Total</div>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>$52.3k</div>
+                                    <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{stats?.overview?.total_bookings || 0}</div>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '20px' }}>
-                                {pieData.map((item, idx) => (
+                            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '15px', marginTop: '20px' }}>
+                                {(stats?.charts?.distribution || pieData).map((item: any, idx: number) => (
                                     <div key={idx} style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <div style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
                                             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }}></div>
                                             {item.name}
                                         </div>
-                                        <div style={{ fontSize: '0.75rem', color: '#adb5bd' }}>+ 16.85%</div>
+                                        <div style={{ fontSize: '0.7rem', color: '#adb5bd' }}>{item.value} bookings</div>
                                     </div>
                                 ))}
                             </div>

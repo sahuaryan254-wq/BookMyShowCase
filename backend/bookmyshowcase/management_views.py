@@ -49,6 +49,31 @@ class DashboardStatsView(views.APIView):
         last_month_start = (this_month_start - timedelta(days=1)).replace(day=1)
         last_month_end = this_month_start - timedelta(days=1)
         
+        # Chart Data: Last 7 days sales
+        daily_sales = []
+        for i in range(6, -1, -1):
+            date = today - timedelta(days=i)
+            day_label = date.strftime('%a')
+            amount = float(bookings.filter(
+                status='CONFIRMED',
+                booking_date__date=date
+            ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0)
+            daily_sales.append({'name': day_label, 'sales': amount})
+
+        # Pie Data: Booking status distribution or source (simulated)
+        pie_data = [
+            {'name': 'Confirmed', 'value': bookings.filter(status='CONFIRMED').count(), 'color': '#2ed8b6'},
+            {'name': 'Pending', 'value': bookings.filter(status='PENDING').count(), 'color': '#ffb64d'},
+            {'name': 'Cancelled', 'value': bookings.filter(status='CANCELLED').count(), 'color': '#ff5370'},
+        ]
+
+        # Simulated Notifications
+        notifications = [
+            {'id': 1, 'title': 'New Booking', 'message': 'New ticket booked for "Avatar 2"', 'time': '5 min ago', 'type': 'info'},
+            {'id': 2, 'title': 'Theatre Approved', 'message': 'Cineplex Plaza has been verified', 'time': '1 hour ago', 'type': 'success'},
+            {'id': 3, 'title': 'Low Availability', 'message': 'Only 5 seats left for "Batman"', 'time': '2 hours ago', 'type': 'warning'},
+        ]
+        
         stats = {
             'overview': {
                 'total_theatres': theatres.count() if theatres else 0,
@@ -80,10 +105,15 @@ class DashboardStatsView(views.APIView):
                 'confirmed': bookings.filter(status='CONFIRMED').count(),
                 'cancelled': bookings.filter(status='CANCELLED').count(),
             },
+            'charts': {
+                'sales_history': daily_sales,
+                'distribution': pie_data,
+            },
+            'notifications': notifications,
             'user_role': {
                 'is_admin': is_admin,
                 'is_theatre_owner': is_theatre_owner,
-                'is_customer': user.is_customer,
+                'is_customer': getattr(user, 'is_customer', False),
             }
         }
         

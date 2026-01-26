@@ -14,6 +14,8 @@ import VerifyOTP from './pages/VerifyOTP';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
+import ManageMovies from './pages/manage/ManageMovies';
+import ManageTheatres from './pages/manage/ManageTheatres';
 import './styles/main.css';
 
 function AppContent() {
@@ -38,6 +40,8 @@ function AppContent() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Dashboard />} />
+        <Route path="/manage/movies" element={<ManageMovies />} />
+        <Route path="/manage/theatres" element={<ManageTheatres />} />
       </Routes>
       {!isDashboard && <Footer />}
     </>
