@@ -4,52 +4,45 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import {
     LayoutDashboard, Box, Users, ShoppingCart,
-    Mail, MessageSquare, Calendar, Monitor,
-    ChevronRight, ChevronDown, Search, Globe,
-    Moon, Bell, User, Edit2, Trash2, Eye,
-    DollarSign, ClipboardList, TrendingUp, Download,
-    Menu, X
+    MessageSquare, Calendar, Monitor,
+    ChevronDown, Search, Globe,
+    Moon, Bell, User, Edit2, Trash2,
+    DollarSign, TrendingUp, Download,
+    Menu, X, Activity, Zap, Star
 } from 'lucide-react';
 import {
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
-    PieChart, Pie, Cell
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 
 const COLORS = {
-    primary: '#4680ff',
-    secondary: '#adb5bd',
-    success: '#2ed8b6',
-    danger: '#ff5370',
-    warning: '#ffb64d',
-    info: '#00bcd4',
-    dark: '#2c3e50',
-    sidebar: '#ffffff',
-    header: '#4680ff',
-    bg: '#f6f7fb'
+    primary: '#F84464', // BMS Red
+    secondary: '#1e293b',
+    success: '#10b981',
+    danger: '#ef4444',
+    warning: '#f59e0b',
+    info: '#3b82f6',
+    dark: '#0f172a',
+    cardBg: '#1e293b',
+    sidebar: '#0f172a',
+    header: '#1e293b',
+    bg: '#020617' // Deep slate black
 };
 
 const lineData = [
     { name: 'Mon', sales: 4000 },
     { name: 'Tue', sales: 3000 },
-    { name: 'Wed', sales: 2000 },
+    { name: 'Wed', sales: 5000 },
     { name: 'Thu', sales: 2780 },
-    { name: 'Fri', sales: 1890 },
-    { name: 'Sat', sales: 2390 },
-    { name: 'Sun', sales: 3490 },
-];
-
-const pieData = [
-    { name: 'Youtube', value: 400, color: '#ff5370' },
-    { name: 'Facebook', value: 300, color: '#4680ff' },
-    { name: 'Twitter', value: 300, color: '#00bcd4' },
+    { name: 'Fri', sales: 6890 },
+    { name: 'Sat', sales: 8390 },
+    { name: 'Sun', sales: 9490 },
 ];
 
 const trafficData = [
-    { name: 'Direct', value: 80, color: '#4680ff' },
-    { name: 'Social', value: 50, color: '#2c3e50' },
-    { name: 'Referral', value: 70, color: '#4680ff' },
-    { name: 'Bounce', value: 40, color: '#2c3e50' },
-    { name: 'Internet', value: 40, color: '#4680ff' },
+    { name: 'Direct', value: 80, color: '#F84464' },
+    { name: 'Social', value: 50, color: '#3b82f6' },
+    { name: 'Referral', value: 70, color: '#10b981' },
+    { name: 'Search', value: 40, color: '#f59e0b' },
 ];
 
 export default function Dashboard() {
@@ -61,7 +54,7 @@ export default function Dashboard() {
     const [stats, setStats] = useState<any>(null);
     const [extraData, setExtraData] = useState<any>(null);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
-    const [dateFilter, setDateFilter] = useState('This Month');
+    const [activeTab, setActiveTab] = useState('Overview');
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -86,11 +79,15 @@ export default function Dashboard() {
             }
         } catch (error) {
             console.error('Failed to fetch dashboard data:', error);
-            // Fallback for demo if API fails
             setStats({
-                overview: { total_bookings: 540, total_theatres: 12, total_shows: 48 },
-                revenue: { this_month: 30200, last_month: 28000 },
-                bookings: { this_month: 145 },
+                overview: { total_bookings: 1240, total_theatres: 25, total_shows: 156 },
+                revenue: { this_month: 85400, last_month: 72000 },
+                bookings: { this_month: 450 },
+                charts: { sales_history: lineData, distribution: [{ name: 'Confirmed', value: 400, color: COLORS.primary }, { name: 'Pending', value: 100, color: '#3b82f6' }] },
+                notifications: [
+                    { id: 1, title: 'Revenue Spike', message: 'Sales are up by 25% today!', time: 'Just now', type: 'success' },
+                    { id: 2, title: 'System Alert', message: 'New update available for movie engine.', time: '2 hours ago', type: 'info' }
+                ],
                 user_role: { is_admin: true }
             });
         } finally {
@@ -99,65 +96,66 @@ export default function Dashboard() {
     };
 
     const sidebarItems = [
-        { type: 'label', label: 'MATERIALLY', subLabel: 'Dashboard & Widget' },
-        { name: 'Dashboard', icon: LayoutDashboard, path: '/admin', active: location.pathname === '/admin' },
-        { name: 'Widget', icon: Box, path: '/widgets' },
-        { type: 'label', label: 'APPLICATION', subLabel: 'Prebuild Application' },
-        { name: 'User', icon: Users, path: '/manage/users', hasSub: true },
-        { name: 'Movies', icon: Box, path: '/manage/movies', hasSub: true },
-        { name: 'Theatres', icon: Monitor, path: '/manage/theatres', hasSub: true },
-        { name: 'Shows', icon: Calendar, path: '/manage/shows', hasSub: true },
-        { name: 'Bookings', icon: ShoppingCart, path: '/manage/bookings', hasSub: true },
-        { name: 'Mail', icon: Mail, path: '/mail' },
-        { name: 'Chat', icon: MessageSquare, path: '/chat' },
-        { type: 'label', label: 'SYSTEM', subLabel: 'Settings & Security' },
-        { name: 'Settings', icon: Edit2, path: '/settings' },
+        { type: 'label', label: 'Main' },
+        { name: 'Overview', icon: LayoutDashboard, path: '/admin' },
+        { name: 'Analytics', icon: Activity, path: '/analytics' },
+        { type: 'label', label: 'Management' },
+        { name: 'Movies', icon: Box, path: '/manage/movies' },
+        { name: 'Theatres', icon: Monitor, path: '/manage/theatres' },
+        { name: 'Shows', icon: Calendar, path: '/manage/shows' },
+        { name: 'Bookings', icon: ShoppingCart, path: '/manage/bookings' },
+        { type: 'label', label: 'People' },
+        { name: 'Users', icon: Users, path: '/manage/users' },
+        { name: 'Support', icon: MessageSquare, path: '/support' },
     ];
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-                <div style={{ width: '40px', height: '40px', border: '3px solid #eee', borderTopColor: COLORS.primary, borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+            <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: COLORS.bg }}>
+                <div style={{ position: 'relative' }}>
+                    <div style={{ width: '60px', height: '60px', border: '2px solid rgba(248, 68, 100, 0.1)', borderTopColor: COLORS.primary, borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: COLORS.primary, fontWeight: 900 }}>BMS</div>
+                </div>
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
     }
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: COLORS.bg, fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ display: 'flex', minHeight: '100vh', background: COLORS.bg, color: '#f1f5f9', fontFamily: "'Outfit', sans-serif" }}>
             {/* Sidebar */}
             <aside style={{
-                width: sidebarOpen ? '260px' : '0px',
+                width: sidebarOpen ? '280px' : '0px',
                 background: COLORS.sidebar,
-                transition: 'all 0.3s ease',
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'fixed',
                 height: '100vh',
                 zIndex: 1000,
-                boxShadow: '2px 0 10px rgba(0,0,0,0.05)',
+                borderRight: '1px solid rgba(255,255,255,0.05)',
                 overflowX: 'hidden'
             }}>
-                <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid #f1f1f1' }}>
-                    <div style={{ width: '32px', height: '32px', background: 'linear-gradient(45deg, #4680ff, #00bcd4)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>M</div>
-                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1e293b' }}>Materially</span>
-                    <button onClick={() => setSidebarOpen(false)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', display: window.innerWidth < 1024 ? 'block' : 'none' }}>
-                        <X size={20} />
-                    </button>
+                <div style={{ padding: '30px', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ width: '40px', height: '40px', background: COLORS.primary, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 20px ${COLORS.primary}40` }}>
+                        <Zap size={20} fill="white" color="white" />
+                    </div>
+                    <span style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.5px' }}>Showcase<span style={{ color: COLORS.primary }}>Pro</span></span>
                 </div>
 
-                <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
+                <div
+                    className="custom-scrollbar"
+                    style={{ flex: 1, overflowY: 'auto', padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     {sidebarItems.map((item, idx) => {
                         if (item.type === 'label') {
                             return (
-                                <div key={idx} style={{ padding: '20px 25px 5px', fontSize: '0.65rem', fontWeight: 700, color: '#adb5bd', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                <div key={idx} style={{ padding: '25px 15px 10px', fontSize: '0.7rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '1.5px' }}>
                                     {item.label}
-                                    {item.subLabel && <div style={{ fontSize: '0.6rem', fontWeight: 400, textTransform: 'none', color: '#ced4da' }}>{item.subLabel}</div>}
                                 </div>
                             );
                         }
                         const Icon = item.icon as any;
-                        const isActive = location.pathname === item.path || item.active;
+                        const isActive = location.pathname === item.path || (item.name === 'Overview' && location.pathname === '/admin');
                         return (
                             <Link
                                 key={idx}
@@ -165,349 +163,271 @@ export default function Dashboard() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    padding: '12px 25px',
-                                    color: isActive ? COLORS.primary : '#555',
-                                    background: isActive ? '#eef3ff' : 'transparent',
+                                    padding: '12px 15px',
+                                    color: isActive ? 'white' : '#94a3b8',
+                                    background: isActive ? 'linear-gradient(90deg, rgba(248, 68, 100, 0.15) 0%, rgba(248, 68, 100, 0) 100%)' : 'transparent',
                                     textDecoration: 'none',
-                                    fontSize: '0.9rem',
-                                    fontWeight: isActive ? 600 : 400,
-                                    borderLeft: isActive ? `3px solid ${COLORS.primary}` : '3px solid transparent',
+                                    fontSize: '0.95rem',
+                                    fontWeight: isActive ? 600 : 500,
+                                    borderRadius: '10px',
                                     transition: 'all 0.2s',
-                                    gap: '12px'
+                                    gap: '12px',
+                                    borderLeft: isActive ? `3px solid ${COLORS.primary}` : '3px solid transparent'
                                 }}
                             >
-                                <Icon size={18} style={{ opacity: isActive ? 1 : 0.7 }} />
-                                <span style={{ flex: 1 }}>{item.name}</span>
-                                {item.hasSub && <ChevronRight size={14} style={{ opacity: 0.5 }} />}
+                                <Icon size={20} style={{ opacity: isActive ? 1 : 0.7 }} />
+                                <span>{item.name}</span>
                             </Link>
                         );
                     })}
+                </div>
+
+                <div style={{ padding: '30px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ background: 'rgba(248, 68, 100, 0.05)', padding: '20px', borderRadius: '16px', border: '1px solid rgba(248, 68, 100, 0.1)' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '5px' }}>Upgrade to Enterprise</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '15px' }}>Get advanced analytics and multi-theatre support.</div>
+                        <button style={{ width: '100%', padding: '10px', background: COLORS.primary, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' }}>Learn More</button>
+                    </div>
                 </div>
             </aside>
 
             {/* Main Content */}
             <div style={{
                 flex: 1,
-                marginLeft: sidebarOpen ? '260px' : '0',
-                transition: 'margin-left 0.3s ease',
+                marginLeft: sidebarOpen ? '280px' : '0',
+                transition: 'margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 display: 'flex',
                 flexDirection: 'column'
             }}>
-                {/* Topbar */}
+                {/* Header */}
                 <header style={{
-                    height: '60px',
-                    background: COLORS.header,
+                    height: '80px',
+                    background: 'transparent',
                     display: 'flex',
                     alignItems: 'center',
-                    padding: '0 25px',
-                    color: 'white',
+                    padding: '0 40px',
                     position: 'sticky',
                     top: 0,
                     zIndex: 900,
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                    backdropFilter: 'blur(20px)',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)'
                 }}>
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', marginRight: '20px' }}>
-                        <Menu size={24} />
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', cursor: 'pointer', padding: '8px', borderRadius: '8px', marginRight: '25px' }}>
+                        <Menu size={20} />
                     </button>
 
-                    <div style={{ position: 'relative', flex: 1, maxWidth: '400px', display: 'flex', alignItems: 'center' }}>
-                        <Search size={18} style={{ position: 'absolute', left: '12px', color: 'rgba(255,255,255,0.7)' }} />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            style={{
-                                width: '100%',
-                                background: 'rgba(255,255,255,0.15)',
-                                border: 'none',
-                                borderRadius: '4px',
-                                padding: '8px 15px 8px 40px',
-                                color: 'white',
-                                outline: 'none'
-                            }}
-                        />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Good Morning, {user?.username} 👋</h2>
+                        <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Here's what's happening on your platform today.</span>
                     </div>
 
-                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem', cursor: 'pointer' }}>
-                            <Globe size={18} />
-                            <span>English</span>
-                            <ChevronDown size={14} />
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '25px' }}>
+                        <div style={{ position: 'relative', width: '250px', display: window.innerWidth > 1024 ? 'block' : 'none' }}>
+                            <Search size={18} style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+                            <input
+                                type="text"
+                                placeholder="Search data..."
+                                style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 15px 10px 45px', color: 'white', outline: 'none' }}
+                            />
                         </div>
-                        <Moon size={18} style={{ cursor: 'pointer' }} />
+
                         <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setNotificationsOpen(!notificationsOpen)}>
-                            <Bell size={20} />
-                            <span style={{ position: 'absolute', top: '-5px', right: '-5px', background: COLORS.danger, width: '15px', height: '15px', borderRadius: '50%', border: '2px solid #4680ff', fontSize: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                <Bell size={20} color="#94a3b8" />
+                            </div>
+                            <span style={{ position: 'absolute', top: '2px', right: '2px', background: COLORS.primary, width: '18px', height: '18px', borderRadius: '50%', border: '3px solid #0f172a', fontSize: '9px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 {stats?.notifications?.length || 0}
                             </span>
 
                             {notificationsOpen && (
-                                <div style={{
-                                    position: 'absolute', top: '40px', right: '0', width: '300px', background: 'white', borderRadius: '8px', boxShadow: '0 5px 25px rgba(0,0,0,0.1)', color: '#333', zIndex: 1001, overflow: 'hidden'
-                                }}>
-                                    <div style={{ padding: '15px', fontWeight: 700, borderBottom: '1px solid #f1f1f1', display: 'flex', justifyContent: 'space-between' }}>
+                                <div style={{ position: 'absolute', top: '60px', right: '0', width: '350px', background: '#1e293b', borderRadius: '20px', boxShadow: '0 20px 50px rgba(0,0,0,0.5)', zIndex: 1001, border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+                                    <div style={{ padding: '20px', fontWeight: 800, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         Notifications
-                                        <X size={16} onClick={(e) => { e.stopPropagation(); setNotificationsOpen(false); }} />
+                                        <div style={{ fontSize: '0.7rem', color: COLORS.primary, cursor: 'pointer' }}>Mark all as read</div>
                                     </div>
-                                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                         {stats?.notifications?.map((n: any) => (
-                                            <div key={n.id} style={{ padding: '12px 15px', borderBottom: '1px solid #f8f9fa', cursor: 'pointer', transition: 'background 0.2s' }} className="notif-item">
-                                                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{n.title}</div>
-                                                <div style={{ fontSize: '0.75rem', color: '#666' }}>{n.message}</div>
-                                                <div style={{ fontSize: '0.65rem', color: '#adb5bd', marginTop: '4px' }}>{n.time}</div>
+                                            <div key={n.id} style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '15px' }}>
+                                                <div style={{ width: '10px', height: '10px', background: n.type === 'success' ? '#10b981' : '#3b82f6', borderRadius: '50%', marginTop: '5px' }}></div>
+                                                <div>
+                                                    <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '3px' }}>{n.title}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{n.message}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '8px' }}>{n.time}</div>
+                                                </div>
                                             </div>
                                         ))}
-                                    </div>
-                                    <div style={{ padding: '10px', textAlign: 'center', fontSize: '0.8rem', color: COLORS.primary, fontWeight: 600, background: '#f8f9fa' }}>
-                                        View All
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                            <div style={{ textAlign: 'right', display: window.innerWidth > 768 ? 'block' : 'none' }}>
-                                <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user?.username}</div>
-                                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>Admin</div>
+
+                        <div
+                            onClick={logout}
+                            style={{ display: 'flex', alignItems: 'center', gap: '12px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '25px', cursor: 'pointer' }}>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user?.username}</div>
+                                <div style={{ fontSize: '0.75rem', color: COLORS.primary, fontWeight: 700 }}>{stats?.user_role?.is_admin ? 'Admin' : 'Owner'}</div>
                             </div>
-                            <div
-                                onClick={logout}
-                                style={{ width: '32px', height: '32px', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                title="Click to Logout"
-                            >
-                                <User size={18} />
+                            <div style={{ width: '45px', height: '45px', background: `linear-gradient(135deg, ${COLORS.primary}, #D43552)`, borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.2rem', boxShadow: `0 10px 20px ${COLORS.primary}40` }}>
+                                {user?.username?.charAt(0).toUpperCase()}
                             </div>
                         </div>
                     </div>
                 </header>
 
                 {/* Dashboard Body */}
-                <main style={{ padding: '25px', display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                <main style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '35px' }}>
 
-                    {/* Toolbar / Filters */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'white', padding: '15px 20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#555' }}>Filter by:</span>
-                            <div style={{ position: 'relative' }}>
-                                <select
-                                    value={dateFilter}
-                                    onChange={(e) => setDateFilter(e.target.value)}
-                                    style={{ padding: '6px 30px 6px 15px', borderRadius: '4px', border: '1px solid #e1e1e1', appearance: 'none', fontSize: '0.85rem', outline: 'none', background: 'white', cursor: 'pointer' }}
-                                >
-                                    <option>Today</option>
-                                    <option>This Week</option>
-                                    <option>This Month</option>
-                                    <option>This Year</option>
-                                </select>
-                                <ChevronDown size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#999' }} />
-                            </div>
+                    {/* Live Indicator */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(16, 185, 129, 0.05)', padding: '12px 25px', borderRadius: '100px', width: 'fit-content', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                        <div style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: '#10b981', borderRadius: '50%', animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite' }}></div>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', background: '#f8f9fa', border: '1px solid #e1e1e1', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                                <Download size={16} /> Export CSV
-                            </button>
-                            {stats?.user_role?.is_admin && (
-                                <button style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 15px', background: COLORS.primary, color: 'white', border: 'none', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                                    <Box size={16} /> Add New Theatre
-                                </button>
-                            )}
-                        </div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#10b981' }}>Live: 128 Active Users</span>
+                        <style>{`@keyframes ping { 75%, 100% { transform: scale(3); opacity: 0; } }`}</style>
                     </div>
 
                     {/* Stats Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '25px' }}>
                         <StatCard
-                            title="All Earnings"
-                            value={`$${stats?.revenue?.this_month || '30200'}`}
-                            subText="10% changes on profit"
+                            title="Total Revenue"
+                            value={`₹${stats?.revenue?.this_month?.toLocaleString('en-IN') || '0'}`}
+                            change="+12.5%"
                             icon={<DollarSign />}
-                            color="#ffb64d"
-                            subColor="#ffb64d"
+                            gradient="linear-gradient(135deg, #F84464 0%, #D43552 100%)"
                         />
                         <StatCard
-                            title="Task"
-                            value={stats?.bookings?.this_month || '145'}
-                            subText="28% task performance"
-                            icon={<ClipboardList />}
-                            color="#ff5370"
-                            subColor="#ff5370"
+                            title="Bookings"
+                            value={stats?.overview?.total_bookings || '0'}
+                            change="+8.2%"
+                            icon={<ShoppingCart />}
+                            gradient="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
                         />
                         <StatCard
-                            title="Page Views"
-                            value="290+"
-                            subText="10k daily views"
-                            icon={<Eye />}
-                            color="#2ed8b6"
-                            subColor="#2ed8b6"
+                            title="Running Shows"
+                            value={stats?.overview?.total_shows || '0'}
+                            change="+4.1%"
+                            icon={<Activity />}
+                            gradient="linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)"
                         />
                         <StatCard
-                            title="Downloads"
-                            value="500"
-                            subText="1k download in App store"
-                            icon={<Download />}
-                            color="#4680ff"
-                            subColor="#4680ff"
+                            title="Average Rating"
+                            value="4.8"
+                            change="+0.2"
+                            icon={<Star />}
+                            gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)"
                         />
                     </div>
 
                     {/* Charts Row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '25px' }}>
-                        {/* Sales Per Day Chart */}
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Sales History (Last 7 Days)</h3>
-                                <div style={{ color: '#4680ff', fontSize: '0.8rem', fontWeight: 700 }}>+12% <TrendingUp size={12} style={{ verticalAlign: 'middle' }} /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 1200 ? '2fr 1fr' : '1fr', gap: '30px' }}>
+                        {/* Area Chart */}
+                        <div style={{ background: COLORS.cardBg, padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                                <div>
+                                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0 }}>Revenue Growth</h3>
+                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Weekly performance analysis</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button style={btnSmallStyle}>Week</button>
+                                    <button style={{ ...btnSmallStyle, background: COLORS.primary, color: 'white' }}>Month</button>
+                                </div>
                             </div>
-                            <div style={{ height: '300px', width: '100%' }}>
+                            <div style={{ height: '350px', width: '100%' }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={stats?.charts?.sales_history || lineData}>
                                         <defs>
                                             <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#4680ff" stopOpacity={0.1} />
-                                                <stop offset="95%" stopColor="#4680ff" stopOpacity={0} />
+                                                <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0} />
                                             </linearGradient>
                                         </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f1f1" />
-                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#adb5bd' }} />
-                                        <YAxis hide />
-                                        <Tooltip />
-                                        <Area type="monotone" dataKey="sales" stroke="#4680ff" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                                        <Tooltip
+                                            contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                                            itemStyle={{ color: COLORS.primary }}
+                                        />
+                                        <Area type="monotone" dataKey="sales" stroke={COLORS.primary} strokeWidth={4} fillOpacity={1} fill="url(#colorSales)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
-                            <div style={{ display: 'flex', borderTop: '1px solid #f1f1f1', marginTop: '20px', paddingTop: '20px' }}>
-                                <div style={{ flex: 1, textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>$4230</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#adb5bd' }}>Total Revenue</div>
-                                </div>
-                                <div style={{ width: '1px', background: '#f1f1f1' }}></div>
-                                <div style={{ flex: 1, textAlign: 'center' }}>
-                                    <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>321</div>
-                                    <div style={{ fontSize: '0.75rem', color: '#adb5bd' }}>Today Sales</div>
-                                </div>
-                            </div>
-                            <div style={{ marginTop: '20px', display: 'flex', gap: '20px', fontSize: '0.8rem', color: '#ff5370', fontWeight: 500 }}>
-                                <span>REALTY <span style={{ marginLeft: '10px' }}>-0.99</span></span>
-                                <span style={{ color: '#2ed8b6' }}>INFRA <span style={{ marginLeft: '10px' }}>-7.66</span></span>
-                            </div>
                         </div>
 
-                        {/* Revenue Pie Chart */}
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '20px' }}>Booking Distribution</h3>
-                            <div style={{ height: '300px', position: 'relative' }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={stats?.charts?.distribution || pieData}
-                                            innerRadius={70}
-                                            outerRadius={90}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                        >
-                                            {(stats?.charts?.distribution || pieData).map((entry: any, index: number) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.8rem', color: '#adb5bd' }}>Total</div>
-                                    <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{stats?.overview?.total_bookings || 0}</div>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '15px', marginTop: '20px' }}>
-                                {(stats?.charts?.distribution || pieData).map((item: any, idx: number) => (
-                                    <div key={idx} style={{ textAlign: 'center' }}>
-                                        <div style={{ fontSize: '0.8rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }}></div>
-                                            {item.name}
+                        {/* Traffic Sources */}
+                        <div style={{ background: COLORS.cardBg, padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '30px' }}>Traffic Pulse</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
+                                {trafficData.map((item, idx) => (
+                                    <div key={idx} style={{ padding: '15px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }}></div>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{item.name}</span>
+                                            </div>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>{item.value}%</span>
                                         </div>
-                                        <div style={{ fontSize: '0.7rem', color: '#adb5bd' }}>{item.value} bookings</div>
+                                        <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', width: `${item.value}%`, background: item.color, borderRadius: '10px', boxShadow: `0 0 10px ${item.color}40` }}></div>
+                                        </div>
                                     </div>
                                 ))}
+                            </div>
+                            <div style={{ marginTop: '30px', padding: '20px', background: 'linear-gradient(135deg, rgba(248, 68, 100, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%)', borderRadius: '20px', textAlign: 'center' }}>
+                                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '5px' }}>Top Growing Source</div>
+                                <div style={{ color: COLORS.primary, fontWeight: 900, fontSize: '1.2rem' }}>Direct Visit <TrendingUp size={16} /></div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Bottom Row */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '25px' }}>
-                        {/* Traffic Sources */}
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                            <h3 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '25px' }}>Traffic Sources</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                {trafficData.map((item, idx) => (
-                                    <div key={idx}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '8px', color: '#555' }}>
-                                            <span>{item.name}</span>
-                                            <span style={{ fontWeight: 600 }}>{item.value}%</span>
-                                        </div>
-                                        <div style={{ height: '4px', background: '#f1f1f1', borderRadius: '2px' }}>
-                                            <div style={{ height: '100%', width: `${item.value}%`, background: item.color, borderRadius: '2px' }}></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* Bottom Table */}
+                    <div style={{ background: COLORS.cardBg, padding: '30px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Recent Transactions</h3>
+                            <button style={{ ...btnSmallStyle, color: COLORS.primary, background: 'rgba(248, 68, 100, 0.1)' }}>View Report</button>
                         </div>
-
-                        {/* Recent Activity Table */}
-                        <div style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-                                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Latest Order</h3>
-                                <Link to="/manage/bookings" style={{ color: COLORS.primary, fontSize: '0.8rem', fontWeight: 600 }}>View All</Link>
-                            </div>
-                            <div style={{ overflowX: 'auto' }}>
-                                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
-                                    <thead style={{ background: '#f8f9fa' }}>
-                                        <tr>
-                                            <th style={tableHeaderStyle}>Customer</th>
-                                            <th style={tableHeaderStyle}>Order Id</th>
-                                            <th style={tableHeaderStyle}>Photo</th>
-                                            <th style={tableHeaderStyle}>Product</th>
-                                            <th style={tableHeaderStyle}>Quantity</th>
-                                            <th style={tableHeaderStyle}>Date</th>
-                                            <th style={tableHeaderStyle}>Status</th>
-                                            <th style={tableHeaderStyle}>Action</th>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ textAlign: 'left', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                        <th style={thStyle}>Customer</th>
+                                        <th style={thStyle}>Movie / Item</th>
+                                        <th style={thStyle}>Date</th>
+                                        <th style={thStyle}>Amount</th>
+                                        <th style={thStyle}>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(extraData?.recent_bookings || demoBookings).map((b: any, idx: number) => (
+                                        <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', transition: 'background 0.2s' }}>
+                                            <td style={tdStyle}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <User size={16} />
+                                                    </div>
+                                                    {b.user_email || b.customer}
+                                                </div>
+                                            </td>
+                                            <td style={tdStyle}>{b.show_details?.movie_title || b.product}</td>
+                                            <td style={tdStyle}>{b.show_details?.date || b.date}</td>
+                                            <td style={{ ...tdStyle, fontWeight: 800 }}>₹{b.total_amount || b.id * 10}</td>
+                                            <td style={tdStyle}>
+                                                <span style={{
+                                                    padding: '5px 12px', borderRadius: '100px', fontSize: '0.7rem', fontWeight: 800,
+                                                    background: b.status === 'CONFIRMED' || b.status === 'Success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                                                    color: b.status === 'CONFIRMED' || b.status === 'Success' ? '#10b981' : '#f59e0b',
+                                                    border: `1px solid ${b.status === 'CONFIRMED' || b.status === 'Success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`
+                                                }}>
+                                                    {b.status}
+                                                </span>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(extraData?.recent_bookings || demoBookings).map((b: any, idx: number) => (
-                                            <tr key={b.id || idx} style={{ borderBottom: '1px solid #f1f1f1' }}>
-                                                <td style={tableCellStyle}>{b.user_email || b.customer}</td>
-                                                <td style={tableCellStyle}>#{b.id || b.orderId}</td>
-                                                <td style={tableCellStyle}>
-                                                    <div style={{ width: '32px', height: '32px', background: '#eee', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Box size={16} color="#adb5bd" />
-                                                    </div>
-                                                </td>
-                                                <td style={tableCellStyle}>{b.show_details?.movie_title || b.product}</td>
-                                                <td style={tableCellStyle}>{b.seats?.length || b.quantity || 1}</td>
-                                                <td style={tableCellStyle}>{b.show_details?.date || (b.booking_date ? new Date(b.booking_date).toLocaleDateString() : b.date)}</td>
-                                                <td style={tableCellStyle}>
-                                                    <span style={{
-                                                        padding: '4px 8px',
-                                                        borderRadius: '4px',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 600,
-                                                        background: b.status === 'CONFIRMED' || b.status === 'Paid' || b.status === 'Success' ? '#e6fffb' : '#fff7e6',
-                                                        color: b.status === 'CONFIRMED' || b.status === 'Paid' || b.status === 'Success' ? '#2ed8b6' : '#ffb64d',
-                                                        border: `1px solid ${b.status === 'CONFIRMED' || b.status === 'Paid' || b.status === 'Success' ? '#b5f5ec' : '#ffe7ba'}`
-                                                    }}>
-                                                        {b.status}
-                                                    </span>
-                                                </td>
-                                                <td style={tableCellStyle}>
-                                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                                        <Edit2 size={16} color={COLORS.primary} style={{ cursor: 'pointer' }} />
-                                                        <Trash2 size={16} color={COLORS.danger} style={{ cursor: 'pointer' }} />
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </main>
@@ -516,59 +436,68 @@ export default function Dashboard() {
     );
 }
 
-const tableHeaderStyle: React.CSSProperties = {
-    padding: '12px 15px',
-    textAlign: 'left',
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    color: '#1e293b',
-    borderBottom: '1px solid #f1f1f1'
-};
-
-const tableCellStyle: React.CSSProperties = {
-    padding: '15px',
-    fontSize: '0.85rem',
-    color: '#555'
-};
-
-function StatCard({ title, value, subText, icon, color, subColor }: any) {
+function StatCard({ title, value, change, icon, gradient }: any) {
     return (
         <div style={{
-            background: 'white',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+            background: COLORS.cardBg,
+            padding: '30px',
+            borderRadius: '24px',
+            border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            gap: '20px',
+            position: 'relative',
+            overflow: 'hidden'
         }}>
-            <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                    <h4 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: '#1e293b' }}>{value}</h4>
-                    <p style={{ fontSize: '0.85rem', color: '#adb5bd', marginTop: '5px' }}>{title}</p>
-                </div>
-                <div style={{ color: color }}>
+            <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '100px', height: '100px', background: gradient, opacity: 0.1, borderRadius: '50%', filter: 'blur(30px)' }}></div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ width: '45px', height: '45px', background: gradient, borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}>
                     {icon}
                 </div>
+                <div style={{ padding: '4px 10px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', fontSize: '0.75rem', fontWeight: 800, borderRadius: '8px' }}>
+                    {change}
+                </div>
             </div>
-            <div style={{
-                padding: '8px 20px',
-                background: subColor,
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-            }}>
-                {subText}
-                <TrendingUp size={14} />
+            <div>
+                <div style={{ fontSize: '0.9rem', color: '#94a3b8', fontWeight: 600, marginBottom: '5px' }}>{title}</div>
+                <div style={{ fontSize: '2rem', fontWeight: 900, color: 'white', letterSpacing: '-1px' }}>{value}</div>
             </div>
         </div>
     );
 }
 
+const btnSmallStyle: React.CSSProperties = {
+    padding: '8px 16px',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: '10px',
+    color: '#94a3b8',
+    fontSize: '0.8rem',
+    fontWeight: 700,
+    cursor: 'pointer',
+    transition: 'all 0.2s'
+};
+
+const thStyle: React.CSSProperties = {
+    padding: '15px',
+    color: '#64748b',
+    fontSize: '0.75rem',
+    fontWeight: 800,
+    textTransform: 'uppercase',
+    letterSpacing: '1px'
+};
+
+const tdStyle: React.CSSProperties = {
+    padding: '20px 15px',
+    fontSize: '0.9rem',
+    color: '#cbd5e1',
+    fontWeight: 500
+};
+
 const demoBookings = [
-    { customer: 'John Doe', orderId: '89432341', product: 'Moto G5', quantity: 12, date: '17-2-2017', status: 'Pending' },
-    { customer: 'Jenny Wilson', orderId: '56457898', product: 'iPhone X', quantity: 15, date: '20-2-2017', status: 'Paid' },
-    { customer: 'Lori Moore', orderId: '24545898', product: 'Redmi 4', quantity: 20, date: '17-2-2017', status: 'Success' },
+    { customer: 'Alex Rivera', product: 'Oppenheimer - 2D', date: 'Oct 24, 2026', total_amount: 1200, status: 'CONFIRMED' },
+    { customer: 'Sarah Jenkins', product: 'Pushpa 2 - IMAX', date: 'Oct 24, 2026', total_amount: 850, status: 'PENDING' },
+    { customer: 'Mike Ross', product: 'Batman - 4DX', date: 'Oct 23, 2026', total_amount: 1500, status: 'CONFIRMED' },
 ];
