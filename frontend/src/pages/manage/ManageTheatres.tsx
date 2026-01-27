@@ -6,6 +6,15 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const COLORS = {
+    primary: '#F84464',
+    bg: '#020617',
+    card: '#1e293b',
+    text: '#f1f5f9',
+    muted: '#94a3b8',
+    border: 'rgba(148,163,184,0.25)'
+};
+
 export default function ManageTheatres() {
     const [theatres, setTheatres] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -45,49 +54,114 @@ export default function ManageTheatres() {
     );
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', background: '#f6f7fb', padding: '25px' }}>
+        <div style={{ display: 'flex', minHeight: '100vh', background: COLORS.bg, padding: '40px', color: COLORS.text, fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ flex: 1, maxWidth: '1400px', margin: '0 auto' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', gap: '20px', flexWrap: 'wrap' }}>
                     <div>
-                        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b' }}>Manage Theatres</h1>
-                        <p style={{ fontSize: '0.85rem', color: '#adb5bd' }}>Control cinema locations and their screens.</p>
+                        <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '6px' }}>Manage Theatres</h1>
+                        <p style={{ fontSize: '0.9rem', color: COLORS.muted }}>Control cinema locations and their screens.</p>
                     </div>
                     <button
                         onClick={() => navigate('/admin')}
-                        style={{ padding: '10px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        style={{
+                            padding: '10px 22px',
+                            background: 'rgba(15,23,42,0.9)',
+                            border: `1px solid ${COLORS.border}`,
+                            borderRadius: '999px',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.9rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            color: COLORS.text
+                        }}
                     >
                         <ChevronLeft size={16} /> Back to Dashboard
                     </button>
                 </div>
 
-                <div style={{ background: 'white', borderRadius: '12px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
-                    <div style={{ padding: '20px', borderBottom: '1px solid #f1f1f1', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px' }}>
-                        <div style={{ position: 'relative', width: '300px' }}>
-                            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#adb5bd' }} />
-                            <input
-                                type="text"
-                                placeholder="Search theatres..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                style={{ width: '100%', padding: '10px 15px 10px 40px', borderRadius: '8px', border: '1px solid #eef0f2', outline: 'none', fontSize: '0.9rem' }}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                            <button style={{ padding: '10px 15px', background: '#f8f9fa', border: '1px solid #eef0f2', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                                <Filter size={16} /> Filter
-                            </button>
-                            <button
-                                onClick={() => alert('Add Theatre Modal Incoming')}
-                                style={{ padding: '10px 20px', background: '#4680ff', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600 }}
-                            >
-                                <Plus size={18} /> Add New Theatre
-                            </button>
-                        </div>
+                {/* Controls */}
+                <div style={{
+                    background: COLORS.card,
+                    borderRadius: '20px',
+                    border: `1px solid ${COLORS.border}`,
+                    marginBottom: '25px',
+                    padding: '18px 20px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '15px'
+                }}>
+                    <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: COLORS.muted }} />
+                        <input
+                            type="text"
+                            placeholder="Search theatres..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '10px 14px 10px 40px',
+                                borderRadius: '999px',
+                                border: `1px solid ${COLORS.border}`,
+                                background: 'rgba(15,23,42,0.9)',
+                                color: COLORS.text,
+                                outline: 'none',
+                                fontSize: '0.9rem'
+                            }}
+                        />
                     </div>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <button style={{
+                            padding: '9px 16px',
+                            background: 'rgba(15,23,42,0.9)',
+                            border: `1px solid ${COLORS.border}`,
+                            borderRadius: '999px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            color: COLORS.muted
+                        }}>
+                            <Filter size={16} /> Filter
+                        </button>
+                        <button
+                            onClick={() => alert('Add Theatre Modal Incoming')}
+                            style={{
+                                padding: '9px 18px',
+                                background: COLORS.primary,
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '999px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                fontSize: '0.85rem',
+                                fontWeight: 700,
+                                boxShadow: `0 10px 25px ${COLORS.primary}40`
+                            }}
+                        >
+                            <Plus size={18} /> Add New Theatre
+                        </button>
+                    </div>
+                </div>
 
+                {/* Table */}
+                <div style={{
+                    background: COLORS.card,
+                    borderRadius: '20px',
+                    border: `1px solid ${COLORS.border}`,
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 45px rgba(15,23,42,0.8)'
+                }}>
                     <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#f8f9fa' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
+                            <thead>
                                 <tr>
                                     <th style={thStyle}>Theatre</th>
                                     <th style={thStyle}>Location</th>
@@ -99,26 +173,35 @@ export default function ManageTheatres() {
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#adb5bd' }}>Loading theatres...</td></tr>
+                                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: COLORS.muted }}>Loading theatres...</td></tr>
                                 ) : filteredTheatres.length === 0 ? (
-                                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: '#adb5bd' }}>No theatres found.</td></tr>
+                                    <tr><td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: COLORS.muted }}>No theatres found.</td></tr>
                                 ) : (
                                     filteredTheatres.map((theatre) => (
-                                        <tr key={theatre.id} style={{ borderBottom: '1px solid #f8f9fa' }}>
+                                        <tr key={theatre.id} style={{ borderBottom: `1px solid rgba(15,23,42,0.9)` }}>
                                             <td style={tdStyle}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                    <div style={{ width: '36px', height: '36px', background: '#eef3ff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4680ff' }}>
+                                                    <div style={{
+                                                        width: '36px',
+                                                        height: '36px',
+                                                        background: 'rgba(248, 68, 100, 0.08)',
+                                                        borderRadius: '10px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: COLORS.primary
+                                                    }}>
                                                         <Monitor size={18} />
                                                     </div>
                                                     <div>
                                                         <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{theatre.name}</div>
-                                                        <div style={{ fontSize: '0.75rem', color: '#adb5bd' }}>{theatre.theatre_type || 'Multiplex'}</div>
+                                                        <div style={{ fontSize: '0.75rem', color: COLORS.muted }}>{theatre.theatre_type || 'Multiplex'}</div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td style={tdStyle}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                    <MapPin size={14} color="#adb5bd" />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: COLORS.muted }}>
+                                                    <MapPin size={14} />
                                                     {theatre.city}, {theatre.state}
                                                 </div>
                                             </td>
@@ -151,30 +234,32 @@ export default function ManageTheatres() {
 }
 
 const thStyle: React.CSSProperties = {
-    padding: '15px 20px',
+    padding: '14px 20px',
     textAlign: 'left',
     fontSize: '0.75rem',
     fontWeight: 700,
-    color: '#1e293b',
+    color: COLORS.muted,
     textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    letterSpacing: '0.6px',
+    borderBottom: `1px solid ${COLORS.border}`,
+    background: 'rgba(15,23,42,0.9)'
 };
 
 const tdStyle: React.CSSProperties = {
-    padding: '12px 20px',
+    padding: '14px 20px',
     fontSize: '0.85rem',
-    color: '#555'
+    color: COLORS.text
 };
 
 const actionBtnStyle: React.CSSProperties = {
     width: '32px',
     height: '32px',
-    borderRadius: '6px',
-    border: '1px solid #f1f1f1',
-    background: 'white',
+    borderRadius: '999px',
+    border: `1px solid ${COLORS.border}`,
+    background: 'rgba(15,23,42,0.9)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    color: '#adb5bd'
+    color: COLORS.muted
 };

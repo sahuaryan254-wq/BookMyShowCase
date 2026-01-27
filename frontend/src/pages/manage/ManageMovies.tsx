@@ -54,18 +54,42 @@ export default function ManageMovies() {
     return (
         <div style={{ display: 'flex', minHeight: '100vh', background: COLORS.bg, color: COLORS.text, fontFamily: "'Outfit', sans-serif", padding: '40px' }}>
             <div style={{ flex: 1, maxWidth: '1400px', margin: '0 auto' }}>
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                    <div>
-                        <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '5px' }}>Movie Library</h1>
-                        <p style={{ color: COLORS.muted }}>Manage your platform's cinematic inventory.</p>
+                {/* Header + Controls */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        <div>
+                            <h1 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '5px' }}>Movie Library</h1>
+                            <p style={{ color: COLORS.muted }}>Manage your platform's cinematic inventory.</p>
+                        </div>
+                        <button
+                            onClick={() => navigate('/admin')}
+                            style={{ padding: '12px 25px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
+                        >
+                            <ChevronLeft size={18} /> Back
+                        </button>
                     </div>
-                    <button
-                        onClick={() => navigate('/admin')}
-                        style={{ padding: '12px 25px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', borderRadius: '12px', cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}
-                    >
-                        <ChevronLeft size={18} /> Back
-                    </button>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        <div style={{ position: 'relative', maxWidth: '320px', width: '100%' }}>
+                            <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: COLORS.muted }} />
+                            <input
+                                type="text"
+                                placeholder="Search movies..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 14px 10px 40px',
+                                    borderRadius: '999px',
+                                    border: '1px solid rgba(148, 163, 184, 0.4)',
+                                    background: 'rgba(15,23,42,0.9)',
+                                    color: COLORS.text,
+                                    outline: 'none',
+                                    fontSize: '0.9rem'
+                                }}
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Grid of Movies */}
@@ -104,7 +128,7 @@ export default function ManageMovies() {
                         ))}
                 </div>
             </div>
-            <style>{`.card-hover:hover { transform: translateY(-8px); boxShadow: 0 25px 50px -12px rgba(0,0,0,0.5); }`}</style>
+            <style>{`.card-hover:hover { transform: translateY(-8px); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }`}</style>
         </div>
     );
 }
